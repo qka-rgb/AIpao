@@ -6,7 +6,10 @@
     "rootDir": "src",
     "strict": false,
     "esModuleInterop": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "declaration": true,
+    "sourceMap": false
   },
   "include": ["src/**/*"]
 }
