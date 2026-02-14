@@ -1,0 +1,66 @@
+﻿<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AIWarhammerGG</title>
+<style>
+  body{font-family:system-ui,Arial;padding:12px;background:#0b1220;color:#e6eef6}
+  .card{background:#071026;padding:12px;border-radius:10px}
+  textarea{width:100%;min-height:120px;padding:8px;border-radius:6px;border:1px solid #223149;background:#02101a;color:#e6eef6}
+  button{margin-top:8px;padding:10px;border-radius:8px;border:0;background:#0ea5a0;color:#042022}
+  #out{white-space:pre-wrap;margin-top:12px;padding:10px;border-radius:6px;background:#02101a;color:#cfeff0;min-height:120px}
+</style>
+</head>
+<body>
+<div class="card">
+  <h3>AIWarhammerGG 鈥?娴嬭瘯椤甸潰</h3>
+  <textarea id="prompt">鎻忚堪涓€涓槾鏆楃殑閰掗鍦烘櫙锛屼富瑙掓劅鍒扮揣寮犮€?/textarea>
+  <div>
+    <button id="sse">娴佸紡鐢熸垚</button>
+    <button id="once">涓€娆℃€х敓鎴?/button>
+    <button id="reset" style="background:#64748b">閲嶇疆</button>
+  </div>
+  <div id="out"></div>
+  <div style="margin-top:8px;color:#9fb0c9;font-size:13px">璇存槑锛氬闇€浠ｇ悊鍒板叾瀹冨悗绔紝鍙湪閮ㄧ讲骞冲彴璁剧疆鐜鍙橀噺 TARGET_API銆?/div>
+</div>
+
+<script>
+const sseBtn = document.getElementById('sse');
+const onceBtn = document.getElementById('once');
+const resetBtn = document.getElementById('reset');
+const promptEl = document.getElementById('prompt');
+const outEl = document.getElementById('out');
+
+function setInteractive(v){ sseBtn.disabled=!v; onceBtn.disabled=!v; promptEl.readOnly=!v; }
+
+sseBtn.onclick = () => {
+  if (sseBtn.disabled) return;
+  setInteractive(false);
+  outEl.textContent = '';
+  const p = encodeURIComponent(promptEl.value || '');
+  const es = new EventSource('/sse-narrate?prompt=' + p);
+  es.onmessage = e => outEl.textContent += e.data;
+  es.onerror = () => { outEl.textContent += '\\n[娴佺粨鏉熸垨鍑洪敊]'; es.close(); };
+  es.addEventListener('done', () => { es.close(); });
+};
+
+onceBtn.onclick = async () => {
+  setInteractive(false);
+  outEl.textContent = '璇锋眰涓?..';
+  try {
+    const r = await fetch('/api/narrate', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ prompt: promptEl.value }) });
+    const j = await r.json();
+    outEl.textContent = j.text || JSON.stringify(j);
+  } catch (e) {
+    outEl.textContent = '閿欒: ' + e;
+    setInteractive(true);
+  }
+};
+
+resetBtn.onclick = () => { promptEl.value=''; outEl.textContent=''; setInteractive(true); };
+
+setInteractive(true);
+</script>
+</body>
+</html>
